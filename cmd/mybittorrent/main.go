@@ -13,7 +13,7 @@ import (
 // - 5:hello -> hello
 // - 10:hello12345 -> hello12345
 func decodeBencode(bencodedString string) (interface{}, error) {
-	r_string, err := regexp.Compile(`\d+\:(.*)`)
+	r_string, err := regexp.Compile(`^\d+\:(.*)`)
 	if err != nil {
 		return "", fmt.Errorf("only strings are supported at the moment")
 	}
@@ -33,28 +33,15 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 		}
 		return st_int, nil
 	}
+	r_list, err := regexp.Compile(`^l\d+\:(.*)i(\-?\d+)e.*`)
+	if err != nil {
+		return "", fmt.Errorf("only strings are supported at the moment")
+	}
+	if r_list.MatchString(bencodedString) {
+		val := r_list.FindStringSubmatch(bencodedString)
+		return val[1:], nil
+	}
 	return "", nil
-	// if unicode.IsDigit(rune(bencodedString[0])) {
-	// 	var firstColonIndex int
-
-	// 	for i := 0; i < len(bencodedString); i++ {
-	// 		if bencodedString[i] == ':' {
-	// 			firstColonIndex = i
-	// 			break
-	// 		}
-	// 	}
-
-	// 	lengthStr := bencodedString[:firstColonIndex]
-
-	// 	length, err := strconv.Atoi(lengthStr)
-	// 	if err != nil {
-	// 		return "", err
-	// 	}
-
-	// 	return bencodedString[firstColonIndex+1 : firstColonIndex+1+length], nil
-	// } else {
-	// 	return "", fmt.Errorf("Only strings are supported at the moment")
-	// }
 }
 
 func main() {
