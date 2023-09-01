@@ -38,8 +38,20 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 		return "", fmt.Errorf("only strings are supported at the moment")
 	}
 	if r_list.MatchString(bencodedString) {
-		val := r_list.FindStringSubmatch(bencodedString)
-		return val[1:], nil
+		vals := r_list.FindStringSubmatch(bencodedString)
+		s := make([]interface{}, 0, 2)
+		for i := 1; i < len(vals); i++ {
+			if i == 2 {
+				st_int, err := strconv.ParseInt(vals[i], 10, 64)
+				if err != nil {
+					return "", fmt.Errorf("error while converting string to int")
+				}
+				s = append(s, st_int)
+				continue
+			}
+			s = append(s, vals[i])
+		}
+		return s, nil
 	}
 	return "", nil
 }
