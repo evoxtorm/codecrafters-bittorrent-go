@@ -21,7 +21,7 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 		val := r_string.FindStringSubmatch(bencodedString)
 		return val[1], nil
 	}
-	r_int, err := regexp.Compile(`^i(\d+)e$`)
+	r_int, err := regexp.Compile(`^i(\-?\d+)e$`)
 	if err != nil {
 		return "", fmt.Errorf("only strings are supported at the moment")
 	}
