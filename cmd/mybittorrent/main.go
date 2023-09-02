@@ -59,13 +59,13 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 	}
 	if r_dict.MatchString(bencodedString) {
 		vals := r_dict.FindStringSubmatch(bencodedString)
-		m := make(map[string]interface{})
+		m := map[string]interface{}{}
 		i := 1
 		for i < len(vals) {
-			if i == 2 {
+			if i == 3 {
 				st_int, err := strconv.ParseInt(vals[i+1], 10, 64)
 				if err != nil {
-					return "", fmt.Errorf("error while converting string to int")
+					continue
 				}
 				m[vals[i]] = st_int
 				i += 2
