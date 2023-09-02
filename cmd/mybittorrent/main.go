@@ -53,6 +53,33 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 		}
 		return s, nil
 	}
+	r_dict, err := regexp.Compile(`^d\d+\:(.*)\d+\:(.*)\d+\:(.*)i(\-?\d+)e.*`)
+	if err != nil {
+		return "", fmt.Errorf("error while converting string to int")
+	}
+	if r_dict.MatchString(bencodedString) {
+		vals := r_dict.FindStringSubmatch(bencodedString)
+		m := make(map[string]interface{})
+		i := 1
+		for i < len(vals) {
+			if i == 2 {
+				st_int, err := strconv.ParseInt(vals[i+1], 10, 64)
+				if err != nil {
+					return "", fmt.Errorf("error while converting string to int")
+				}
+				m[vals[i]] = st_int
+				i += 2
+				continue
+			}
+			m[vals[i]] = vals[i+1]
+			i += 2
+		}
+		jsonData, err := json.Marshal(m)
+		if err != nil {
+			return "", fmt.Errorf("error while converting string to int")
+		}
+		return string(jsonData), nil
+	}
 	return "", nil
 }
 
