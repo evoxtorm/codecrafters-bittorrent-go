@@ -99,6 +99,21 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 	return "", nil
 }
 
+func splitString(input string, chunkSize int) []string {
+	var chunks []string
+
+	for i := 0; i < len(input); i += chunkSize {
+		end := i + chunkSize
+		if end > len(input) {
+			end = len(input)
+		}
+		chunk := input[i:end]
+		chunks = append(chunks, chunk)
+	}
+
+	return chunks
+}
+
 func main() {
 	command := os.Args[1]
 	if command == "decode" {
@@ -132,9 +147,17 @@ func main() {
 		if err := bencode.Marshal(&buffer_, jsonObject.Info); err != nil {
 			return
 		}
+		chunkSize := 20
+
+		chunks := splitString(jsonObject.Info.Pieces, chunkSize)
 		fmt.Printf("Tracker URL: %s\n", jsonObject.Announce)
 		fmt.Printf("Length: %d\n", jsonObject.Info.Length)
 		fmt.Printf("Info Hash: %x\n", sha1.Sum(buffer_.Bytes()))
+		fmt.Printf("Piece Length: %d\n", jsonObject.Info.PiecesLen)
+		fmt.Printf("Piece Hashes:\n")
+		for _, chunk := range chunks {
+			fmt.Printf("%x\n", chunk)
+		}
 	} else {
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
