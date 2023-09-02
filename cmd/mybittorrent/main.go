@@ -74,11 +74,7 @@ func decodeBencode(bencodedString string) (interface{}, error) {
 			m[vals[i]] = vals[i+1]
 			i += 2
 		}
-		jsonData, err := json.Marshal(m)
-		if err != nil {
-			return "", fmt.Errorf("error while converting string to int")
-		}
-		return string(jsonData), nil
+		return m, nil
 	}
 	return "", nil
 }
