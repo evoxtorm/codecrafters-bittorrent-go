@@ -3,8 +3,12 @@ package main
 import (
 	"bytes"
 	"crypto/sha1"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -22,6 +26,11 @@ type Info struct {
 	Name      string `bencode:"name"`
 	PiecesLen int64  `bencode:"piece length"`
 	Pieces    string `bencode:"pieces"`
+}
+
+type TrackerResponse struct {
+	Interval int64  `bencode:"interval"`
+	Peers    string `bencode:"peers"`
 }
 
 // func decodeBencodeNew(r *bufio.Reader) (interface{}, error) {
@@ -114,6 +123,51 @@ func splitString(input string, chunkSize int) []string {
 	return chunks
 }
 
+func get_request(jsonObject Torrent, buffer_ bytes.Buffer) (bool, error) {
+	url_ := jsonObject.Announce
+	info_hash := sha1.Sum(buffer_.Bytes())
+	queryParams := url.Values{}
+	queryParams.Add("info_hash", string(info_hash[:]))
+	queryParams.Add("peer_id", "00112233445566778899")
+	queryParams.Add("port", "6881")
+	queryParams.Add("uploaded", "0")
+	queryParams.Add("downloaded", "0")
+	queryParams.Add("left", strconv.Itoa(int(jsonObject.Info.Length)))
+	queryParams.Add("compact", "1")
+	encodedParams := queryParams.Encode()
+	fullURL := fmt.Sprintf("%s?%s", url_, encodedParams)
+
+	response, err := http.Get(fullURL)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return false, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		fmt.Println("Request failed with status code:", response.StatusCode)
+		return false, err
+	}
+
+	var trackerResponse TrackerResponse
+	err = bencode.Unmarshal(response.Body, &trackerResponse)
+	if err != nil {
+		fmt.Println(err)
+		return false, err
+	}
+	peerSize := 6
+	numPeers := len(trackerResponse.Peers) / peerSize
+	for i := 0; i < numPeers; i++ {
+		start := i * 6
+		end := start + 6
+		peer := trackerResponse.Peers[start:end]
+		ip := net.IP(peer[0:4])
+		port := binary.BigEndian.Uint16([]byte(peer[4:6]))
+		fmt.Printf("%s:%d\n", ip, port)
+	}
+	return true, nil
+}
+
 func main() {
 	command := os.Args[1]
 	if command == "decode" {
@@ -132,6 +186,7 @@ func main() {
 			fmt.Println("Error reading file:", err)
 			return
 		}
+		defer data.Close()
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -144,6 +199,7 @@ func main() {
 		}
 
 		var buffer_ bytes.Buffer
+
 		if err := bencode.Marshal(&buffer_, jsonObject.Info); err != nil {
 			return
 		}
@@ -156,8 +212,36 @@ func main() {
 		fmt.Printf("Piece Length: %d\n", jsonObject.Info.PiecesLen)
 		fmt.Printf("Piece Hashes:\n")
 		for _, chunk := range chunks {
-			fmt.Printf("%x\n", chunk)
+			if command == "info" {
+				fmt.Printf("%x\n", chunk)
+			}
 		}
+
+	} else if command == "peers" {
+		filename := os.Args[2]
+		data, err := os.Open(filename)
+		if err != nil {
+			fmt.Println("Error reading file:", err)
+			return
+		}
+		defer data.Close()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		jsonObject := Torrent{}
+		err = bencode.Unmarshal(data, &jsonObject)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		var buffer_ bytes.Buffer
+
+		if err := bencode.Marshal(&buffer_, jsonObject.Info); err != nil {
+			return
+		}
+		get_request(jsonObject, buffer_)
 	} else {
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
