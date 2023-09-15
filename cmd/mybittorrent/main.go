@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"regexp"
 	"strconv"
 
 	bencode "github.com/jackpal/bencode-go"
@@ -31,73 +30,6 @@ type Info struct {
 type TrackerResponse struct {
 	Interval int64  `bencode:"interval"`
 	Peers    string `bencode:"peers"`
-}
-
-func decodeBencode(bencodedString string) (interface{}, error) {
-	r_string, err := regexp.Compile(`^\d+\:(.*)`)
-	if err != nil {
-		return "", fmt.Errorf("only strings are supported at the moment")
-	}
-	if r_string.MatchString(bencodedString) {
-		val := r_string.FindStringSubmatch(bencodedString)
-		return val[1], nil
-	}
-	r_int, err := regexp.Compile(`^i(\-?\d+)e$`)
-	if err != nil {
-		return "", fmt.Errorf("only strings are supported at the moment")
-	}
-	if r_int.MatchString(bencodedString) {
-		val := r_int.FindStringSubmatch(bencodedString)
-		st_int, err := strconv.ParseInt(val[1], 10, 64)
-		if err != nil {
-			return "", fmt.Errorf("error while converting string to int")
-		}
-		return st_int, nil
-	}
-	r_list, err := regexp.Compile(`^l\d+\:(.*)i(\-?\d+)e.*`)
-	if err != nil {
-		return "", fmt.Errorf("only strings are supported at the moment")
-	}
-	if r_list.MatchString(bencodedString) {
-		vals := r_list.FindStringSubmatch(bencodedString)
-		s := make([]interface{}, 0, 2)
-		for i := 1; i < len(vals); i++ {
-			if i == 2 {
-				st_int, err := strconv.ParseInt(vals[i], 10, 64)
-				if err != nil {
-					return "", fmt.Errorf("error while converting string to int")
-				}
-				s = append(s, st_int)
-				continue
-			}
-			s = append(s, vals[i])
-		}
-		return s, nil
-	}
-	r_dict, err := regexp.Compile(`^d\d+\:(.*)\d+\:(.*)\d+\:(.*)i(\-?\d+)e.*`)
-	if err != nil {
-		return "", fmt.Errorf("error while converting string to int")
-	}
-	if r_dict.MatchString(bencodedString) {
-		vals := r_dict.FindStringSubmatch(bencodedString)
-		m := map[string]interface{}{}
-		i := 1
-		for i < len(vals) {
-			if i == 3 {
-				st_int, err := strconv.ParseInt(vals[i+1], 10, 64)
-				if err != nil {
-					continue
-				}
-				m[vals[i]] = st_int
-				i += 2
-				continue
-			}
-			m[vals[i]] = vals[i+1]
-			i += 2
-		}
-		return m, nil
-	}
-	return "", nil
 }
 
 func splitString(input string, chunkSize int) []string {
@@ -187,7 +119,7 @@ func main() {
 	command := os.Args[1]
 	if command == "decode" {
 		bencodedValue := os.Args[2]
-		decoded, err := decodeBencode(bencodedValue)
+		decoded, err := bencode.Decode(bytes.NewReader([]byte(bencodedValue)))
 		if err != nil {
 			fmt.Println(err)
 			return
