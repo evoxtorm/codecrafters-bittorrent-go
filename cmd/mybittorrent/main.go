@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -92,27 +94,48 @@ func get_request(jsonObject Torrent, buffer_ bytes.Buffer) (bool, error) {
 	return true, nil
 }
 
-func sendHandshake(conn net.Conn, buffer_ bytes.Buffer) error {
-	// Construct the handshake message
-	protocol := "BitTorrent protocol"
-	reserved := make([]byte, 8) // 8 bytes reserved, all set to zero
-	info_hash_ := sha1.Sum(buffer_.Bytes())
-	infoHash := []byte(info_hash_[:])        // 20 byte sha1 infohash
-	peerID := []byte("00112233445566778899") // 20 byte peer id
+func sendHandshake(peers string, buffer bytes.Buffer) {
+	conn, err := net.Dial("tcp", peers)
+	if err != nil {
+		fmt.Printf("Error while making connection: %s\n", err)
+		return
+	}
+	defer conn.Close()
 
-	protocolLen := byte(19)
-	handshakeMsg := make([]byte, 0, 68) // Total length should be 68 bytes
+	// Prepare infoHash and peerID
+	infoHash := sha1.Sum(buffer.Bytes())
+	peerID := []byte("00112233445566778899")
 
-	// Append protocol length, protocol, reserved, infoHash, and peerID to the message
-	handshakeMsg = append(handshakeMsg, protocolLen)
-	handshakeMsg = append(handshakeMsg, protocol...)
-	handshakeMsg = append(handshakeMsg, reserved...)
-	handshakeMsg = append(handshakeMsg, infoHash...)
-	handshakeMsg = append(handshakeMsg, peerID...)
+	// Build the handshake message
+	handshake := new(bytes.Buffer)
+	handshake.WriteByte(19)
+	handshake.WriteString("BitTorrent protocol")
+	handshake.Write([]byte{0, 0, 0, 0, 0, 0, 0, 0}) // 8 reserved bytes
+	handshake.Write(infoHash[:])
+	handshake.Write(peerID)
 
 	// Send the handshake message over the connection
-	_, err := conn.Write(handshakeMsg)
-	return err
+	_, err = conn.Write(handshake.Bytes())
+	if err != nil {
+		fmt.Println("Error sending handshake:", err)
+		return
+	}
+
+	// Read and process the response handshake
+	buf := make([]byte, 68)
+	_, err = io.ReadFull(conn, buf)
+	if err != nil {
+		if err == io.EOF {
+			fmt.Println("Peer closed the connection")
+		} else {
+			fmt.Println("Error reading response:", err)
+		}
+		return
+	}
+
+	// Extract and print the peer id from the response handshake
+	receivedPeerID := buf[48:]
+	fmt.Printf("Peer ID: %s\n", hex.EncodeToString(receivedPeerID))
 }
 
 func main() {
@@ -217,11 +240,8 @@ func main() {
 		// val := strings.Split(peers, ":")
 		// ip := val[0]
 		// portt := val[1]
-		conn, err := net.Dial("tcp", peers)
-		if err != nil {
-			fmt.Println("Error while making connection : %s", err)
-		}
-		sendHandshake(conn, buffer_)
+		sendHandshake(peers, buffer_)
+		// conn.Close()
 
 	} else {
 		fmt.Println("Unknown command: " + command)
