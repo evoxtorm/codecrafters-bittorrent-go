@@ -33,14 +33,6 @@ type TrackerResponse struct {
 	Peers    string `bencode:"peers"`
 }
 
-// func decodeBencodeNew(r *bufio.Reader) (interface{}, error) {
-// 	data, err := bencode.Decode(r)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return data, nil
-// }
-
 func decodeBencode(bencodedString string) (interface{}, error) {
 	r_string, err := regexp.Compile(`^\d+\:(.*)`)
 	if err != nil {
@@ -168,6 +160,29 @@ func get_request(jsonObject Torrent, buffer_ bytes.Buffer) (bool, error) {
 	return true, nil
 }
 
+func sendHandshake(conn net.Conn, buffer_ bytes.Buffer) error {
+	// Construct the handshake message
+	protocol := "BitTorrent protocol"
+	reserved := make([]byte, 8) // 8 bytes reserved, all set to zero
+	info_hash_ := sha1.Sum(buffer_.Bytes())
+	infoHash := []byte(info_hash_[:])        // 20 byte sha1 infohash
+	peerID := []byte("00112233445566778899") // 20 byte peer id
+
+	protocolLen := byte(19)
+	handshakeMsg := make([]byte, 0, 68) // Total length should be 68 bytes
+
+	// Append protocol length, protocol, reserved, infoHash, and peerID to the message
+	handshakeMsg = append(handshakeMsg, protocolLen)
+	handshakeMsg = append(handshakeMsg, protocol...)
+	handshakeMsg = append(handshakeMsg, reserved...)
+	handshakeMsg = append(handshakeMsg, infoHash...)
+	handshakeMsg = append(handshakeMsg, peerID...)
+
+	// Send the handshake message over the connection
+	_, err := conn.Write(handshakeMsg)
+	return err
+}
+
 func main() {
 	command := os.Args[1]
 	if command == "decode" {
@@ -242,6 +257,40 @@ func main() {
 			return
 		}
 		get_request(jsonObject, buffer_)
+	} else if command == "handshake" {
+		filename := os.Args[2]
+		data, err := os.Open(filename)
+		if err != nil {
+			fmt.Println("Error reading file:", err)
+			return
+		}
+		defer data.Close()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		jsonObject := Torrent{}
+		err = bencode.Unmarshal(data, &jsonObject)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		var buffer_ bytes.Buffer
+
+		if err := bencode.Marshal(&buffer_, jsonObject.Info); err != nil {
+			return
+		}
+		peers := os.Args[3]
+		// val := strings.Split(peers, ":")
+		// ip := val[0]
+		// portt := val[1]
+		conn, err := net.Dial("tcp", peers)
+		if err != nil {
+			fmt.Println("Error while making connection : %s", err)
+		}
+		sendHandshake(conn, buffer_)
+
 	} else {
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
