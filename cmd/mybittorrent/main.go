@@ -632,7 +632,7 @@ func main() {
 				return
 			}
 		} else {
-			fmt.Println("Unequal pieces")
+			fmt.Println("Unequal pieces ")
 		}
 
 	default:
