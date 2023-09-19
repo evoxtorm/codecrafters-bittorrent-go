@@ -638,7 +638,7 @@ func main() {
 			}
 			fmt.Printf("Piece %d downloaded to %s.\n", pieceIndex, file_val)
 		} else {
-			panic("Not matched")
+			panic("Not matched ")
 		}
 
 	default:
