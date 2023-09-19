@@ -537,6 +537,7 @@ func main() {
 				return
 			}
 			fmt.Println(sendHandshake(conn, peers, buffer_))
+			conn.Close()
 		}
 	case "download_piece":
 		filename := os.Args[4]
