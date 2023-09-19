@@ -605,7 +605,7 @@ func main() {
 			binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
 			messageData[4] = Request
 			copy(messageData[5:], requestMessage)
-			_, err := connections[peerStr].Write(requestMessage)
+			_, err := connections[peerStr].Write(messageData)
 			if err != nil {
 				fmt.Println("Error sending request message:", err)
 				return
