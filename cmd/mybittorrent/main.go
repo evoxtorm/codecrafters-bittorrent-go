@@ -406,7 +406,7 @@ func printPeers(peers []Peers) {
 }
 
 func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
-	fmt.Println("Handle peer message started ", messageID_)
+	// fmt.Println("Handle peer message started ", messageID_)
 	// for {
 	buffer := make([]byte, 4)
 	// _, err := io.ReadFull(conn, buffer)
@@ -428,13 +428,13 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 	messageLength := binary.BigEndian.Uint32(buffer)
 	payload := make([]byte, messageLength-1)
 
-	size, err := io.ReadFull(conn, payload)
+	_, err = io.ReadFull(conn, payload)
 	if err != nil {
 		fmt.Println("Error reading message length:", err)
 		panic(err)
 	}
 
-	fmt.Printf("Size: %d, Message_id: %d\n", size, messageID_)
+	// fmt.Printf("Size: %d, Message_id: %d\n", size, messageID_)
 	if messageId == uint8(messageID_) {
 		return payload
 	}
@@ -616,7 +616,7 @@ func main() {
 		}
 		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
 		for i := int(0); i < int(count); i++ {
-			fmt.Println("This the piece number: ", Piece)
+			// fmt.Println("This the piece number: ", Piece)
 			data := handlePeerMessages(connections[peerStr], Piece)
 			pieceInd := binary.BigEndian.Uint32(data[0:4])
 			if pieceInd != uint32(pieceIndex) {
