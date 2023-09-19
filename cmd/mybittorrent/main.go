@@ -428,13 +428,13 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 		messageLength := binary.BigEndian.Uint32(buffer)
 		payload := make([]byte, messageLength-1)
 
-		_, err = io.ReadFull(conn, payload)
+		size, err := io.ReadFull(conn, payload)
 		if err != nil {
 			fmt.Println("Error reading message length:", err)
 			panic(err)
 		}
 
-		fmt.Println(messageId, "this is message id")
+		fmt.Printf("Size: %d, Message_id: %d\n", size, messageID_)
 		if messageId == messageID_ {
 			return payload
 		}
@@ -571,7 +571,7 @@ func main() {
 		connections := map[string]net.Conn{}
 		peers := get_peers(trackerResponse)
 		defer closeALlConn(connections)
-		peerObjVal := peers[1]
+		peerObjVal := peers[0]
 		peerStr := fmt.Sprintf("%s:%d", peerObjVal.Ip, peerObjVal.Port)
 		connections[peerStr], err = createConnection(peerStr)
 		if err != nil {
@@ -596,7 +596,7 @@ func main() {
 		piecesHash := pieces[pieceIndex]
 
 		count := 0
-		for i := 0; i < int(jsonObject.Info.PiecesLen); i = i + BLOCK {
+		for i := int64(0); i < int64(jsonObject.Info.PiecesLen); i = i + BLOCK {
 			requestMessage := make([]byte, 12)
 			binary.BigEndian.PutUint32(requestMessage[0:4], uint32(pieceIndex))
 			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i))
