@@ -630,6 +630,7 @@ func main() {
 		sum := sha1.Sum(combinedBlockPiece)
 		fmt.Println(string(sum[:]) == piecesHash, "this is hash")
 		if string(sum[:]) == piecesHash {
+			fmt.Println(os.Args[3], "this is arg3")
 			err := os.WriteFile(os.Args[3], combinedBlockPiece, os.ModePerm)
 			if err != nil {
 				fmt.Println(err)
