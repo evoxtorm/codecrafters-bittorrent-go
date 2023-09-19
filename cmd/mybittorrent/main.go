@@ -621,7 +621,7 @@ func main() {
 			copy(combinedBlockPiece[begin:], blockData)
 		}
 		sum := sha1.Sum(combinedBlockPiece)
-		println(sum, piecesHash)
+		fmt.Println(sum, piecesHash)
 		if string(sum[:]) == piecesHash {
 			err := os.WriteFile(os.Args[3], combinedBlockPiece, os.ModePerm)
 			if err != nil {
