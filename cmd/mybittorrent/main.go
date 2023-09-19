@@ -595,7 +595,7 @@ func main() {
 
 		count := 0
 		for i := 0; i < int(jsonObject.Info.PiecesLen); i = i + BLOCK {
-			requestMessage := make([]byte, 13)
+			requestMessage := make([]byte, 12)
 			// binary.BigEndian.PutUint32(requestMessage[:4], 13)
 			// requestMessage[4] = 6
 			binary.BigEndian.PutUint32(requestMessage[0:4], uint32(pieceIndex))
@@ -609,6 +609,7 @@ func main() {
 			}
 			count++
 		}
+		fmt.Println("This is coming here")
 		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
 		for i := int64(0); i < int64(count); i++ {
 			data := handlePeerMessages(connections[peerStr], Piece)
