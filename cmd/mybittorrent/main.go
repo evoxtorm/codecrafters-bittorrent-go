@@ -568,10 +568,10 @@ func main() {
 		defer closeALlConn(connections)
 		peerObjVal := peers[0]
 		peerStr := fmt.Sprintf("%s:%d\n", peerObjVal.Ip, peerObjVal.Port)
-		fmt.Println(peerStr, " this is peerstr")
+		fmt.Println(peers, " this is peerstr")
 		connections[peerStr], err = createConnection(peerStr)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err, "Error while creating connection")
 			return
 		}
 		sendHandshake(connections[peerStr], peerStr, buffer_)
