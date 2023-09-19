@@ -631,7 +631,7 @@ func main() {
 		// fmt.Println(string(sum[:]) == piecesHash, "this is hash")
 		if string(sum[:]) == piecesHash {
 			file_val := os.Args[3]
-			fmt.Println(file_val, "this is arg3")
+			// fmt.Println(file_val, "this is arg3")
 			err := os.WriteFile(file_val, combinedBlockPiece, os.ModePerm)
 			if err != nil {
 				fmt.Println(err)
