@@ -406,19 +406,23 @@ func printPeers(peers []Peers) {
 }
 
 func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
-	buffer := make([]byte, 4)
 	for {
-		_, err := io.ReadFull(conn, buffer)
+		buffer := make([]byte, 4)
+		// _, err := io.ReadFull(conn, buffer)
+		_, err := conn.Read(buffer)
 		if (err) != nil {
 			fmt.Println("Error reading message length:", err)
 			return nil
 		}
-		messageID := make([]byte, 1)
-		_, err = io.ReadFull(conn, messageID)
+		recievedMessageID := make([]byte, 1)
+		// _, err = io.ReadFull(conn, messageID)
+		_, err = conn.Read(recievedMessageID)
 		if err != nil {
 			fmt.Println("Error reading message ID:", err)
 			return nil
 		}
+		var messageId uint8
+		binary.Read(bytes.NewReader(recievedMessageID), binary.BigEndian, &messageId)
 		messageLength := binary.BigEndian.Uint32(buffer)
 		payload := make([]byte, messageLength-1)
 
@@ -428,8 +432,8 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 			return nil
 		}
 
-		fmt.Println(messageID[0], " this is message id")
-		if messageID[0] == messageID_ {
+		fmt.Println(messageId, " this is message id")
+		if messageId == messageID_ {
 			return payload
 		}
 	}
