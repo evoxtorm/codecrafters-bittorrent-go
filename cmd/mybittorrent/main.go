@@ -406,8 +406,8 @@ func printPeers(peers []Peers) {
 }
 
 func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
+	fmt.Println("Handle peer message started ", messageID_)
 	for {
-		fmt.Println("Handle peer message started ", messageID_)
 		buffer := make([]byte, 4)
 		// _, err := io.ReadFull(conn, buffer)
 		_, err := conn.Read(buffer)
@@ -568,12 +568,10 @@ func main() {
 			return
 		}
 		connections := map[string]net.Conn{}
-		// sendHandshake(peers, buffer_)
 		peers := get_peers(trackerResponse)
 		defer closeALlConn(connections)
 		peerObjVal := peers[0]
 		peerStr := fmt.Sprintf("%s:%d", peerObjVal.Ip, peerObjVal.Port)
-		fmt.Println(peers, " this is peerstr")
 		connections[peerStr], err = createConnection(peerStr)
 		if err != nil {
 			fmt.Println(err, "Error while creating connection")
@@ -595,8 +593,6 @@ func main() {
 		count := 0
 		for i := 0; i < int(jsonObject.Info.PiecesLen); i = i + BLOCK {
 			requestMessage := make([]byte, 12)
-			// binary.BigEndian.PutUint32(requestMessage[:4], 13)
-			// requestMessage[4] = 6
 			binary.BigEndian.PutUint32(requestMessage[0:4], uint32(pieceIndex))
 			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i))
 			binary.BigEndian.PutUint32(requestMessage[8:], BLOCK)
@@ -612,7 +608,6 @@ func main() {
 			}
 			count++
 		}
-		fmt.Println(peerStr, "This is coming here")
 		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
 		for i := int(0); i < int(count); i++ {
 			data := handlePeerMessages(connections[peerStr], Piece)
@@ -626,6 +621,7 @@ func main() {
 			copy(combinedBlockPiece[begin:], blockData)
 		}
 		sum := sha1.Sum(combinedBlockPiece)
+		println(sum, piecesHash)
 		if string(sum[:]) == piecesHash {
 			err := os.WriteFile(os.Args[3], combinedBlockPiece, os.ModePerm)
 			if err != nil {
