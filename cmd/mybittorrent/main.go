@@ -570,7 +570,7 @@ func main() {
 		connections := map[string]net.Conn{}
 		peers := get_peers(trackerResponse)
 		defer closeALlConn(connections)
-		peerObjVal := peers[0]
+		peerObjVal := peers[1]
 		peerStr := fmt.Sprintf("%s:%d", peerObjVal.Ip, peerObjVal.Port)
 		connections[peerStr], err = createConnection(peerStr)
 		if err != nil {
