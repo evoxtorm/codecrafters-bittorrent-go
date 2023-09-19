@@ -433,7 +433,6 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 			return nil
 		}
 
-		fmt.Println(messageId, " this is message id")
 		if messageId == messageID_ {
 			return payload
 		}
