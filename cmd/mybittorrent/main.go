@@ -434,6 +434,7 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 			panic(err)
 		}
 
+		fmt.Println(messageId, "this is message id")
 		if messageId == messageID_ {
 			return payload
 		}
@@ -579,7 +580,11 @@ func main() {
 		}
 		sendHandshake(connections[peerStr], peerStr, buffer_)
 		handlePeerMessages(connections[peerStr], Bitfield)
-		interestedMessage := []byte{0, 0, 0, 1, 2} // Message length (1 byte) + Message ID (1 byte) + Payload (empty)
+		// interestedMessage := []byte{0, 0, 0, 1, 2} // Message length (1 byte) + Message ID (1 byte) + Payload (empty)
+		interestedMessage := make([]byte, 4+1+len([]byte{}))
+		binary.BigEndian.PutUint32(interestedMessage[0:4], uint32(1+len([]byte{})))
+		interestedMessage[4] = Interested
+		copy(interestedMessage[5:], []byte{})
 		connections[peerStr].Write(interestedMessage)
 		handlePeerMessages(connections[peerStr], Unchoke)
 		piecesHex := jsonObject.Info.Pieces
