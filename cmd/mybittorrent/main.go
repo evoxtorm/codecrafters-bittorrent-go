@@ -616,6 +616,7 @@ func main() {
 		}
 		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
 		for i := int(0); i < int(count); i++ {
+			fmt.Println("This the piece number: ", Piece)
 			data := handlePeerMessages(connections[peerStr], Piece)
 			pieceInd := binary.BigEndian.Uint32(data[0:4])
 			if pieceInd != uint32(pieceIndex) {
