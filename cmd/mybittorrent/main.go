@@ -606,11 +606,11 @@ func main() {
 				length = jsonObject.Info.PiecesLen - begin
 			}
 			requestMessage := make([]byte, 13)
-			binary.BigEndian.PutUint32(requestMessage[:4], 13)
-			requestMessage[4] = 6
-			binary.BigEndian.PutUint32(requestMessage[5:9], uint32(pieceIndex))
-			binary.BigEndian.PutUint32(requestMessage[9:13], uint32(begin))
-			binary.BigEndian.PutUint32(requestMessage[13:17], uint32(length))
+			// binary.BigEndian.PutUint32(requestMessage[:4], 13)
+			// requestMessage[4] = 6
+			binary.BigEndian.PutUint32(requestMessage[0:4], uint32(pieceIndex))
+			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(begin))
+			binary.BigEndian.PutUint32(requestMessage[8:], uint32(length))
 
 			_, err := connections[peerStr].Write(requestMessage)
 			if err != nil {
