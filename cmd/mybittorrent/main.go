@@ -407,6 +407,7 @@ func printPeers(peers []Peers) {
 
 func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 	for {
+		fmt.Println("Handle peer message started ", messageID_)
 		buffer := make([]byte, 4)
 		// _, err := io.ReadFull(conn, buffer)
 		_, err := conn.Read(buffer)
@@ -609,7 +610,7 @@ func main() {
 			}
 			count++
 		}
-		fmt.Println("This is coming here")
+		fmt.Println(peerStr, "This is coming here")
 		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
 		for i := int64(0); i < int64(count); i++ {
 			data := handlePeerMessages(connections[peerStr], Piece)
