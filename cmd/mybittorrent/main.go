@@ -413,6 +413,7 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 		_, err := conn.Read(buffer)
 		if (err) != nil {
 			fmt.Println("Error reading message length:", err)
+			conn.Close()
 			panic(err)
 
 		}
@@ -421,6 +422,7 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 		_, err = conn.Read(recievedMessageID)
 		if err != nil {
 			fmt.Println("Error reading message ID:", err)
+			conn.Close()
 			panic(err)
 		}
 		var messageId uint8
@@ -431,6 +433,7 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 		_, err = io.ReadFull(conn, payload)
 		if err != nil {
 			fmt.Println("Error reading message length:", err)
+			conn.Close()
 			panic(err)
 		}
 
