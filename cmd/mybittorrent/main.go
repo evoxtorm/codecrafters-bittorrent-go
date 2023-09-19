@@ -571,7 +571,7 @@ func main() {
 		peers := get_peers(trackerResponse)
 		defer closeALlConn(connections)
 		peerObjVal := peers[0]
-		peerStr := fmt.Sprintf("%s:%d\n", peerObjVal.Ip, peerObjVal.Port)
+		peerStr := fmt.Sprintf("%s:%d", peerObjVal.Ip, peerObjVal.Port)
 		fmt.Println(peers, " this is peerstr")
 		connections[peerStr], err = createConnection(peerStr)
 		if err != nil {
