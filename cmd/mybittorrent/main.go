@@ -349,7 +349,7 @@ func getRequest(jsonObject Torrent, buffer_ bytes.Buffer) (TrackerResponse, erro
 	return trackerResponse, nil
 }
 
-func sendHandshake(conn net.Conn, peers string, buffer bytes.Buffer) {
+func sendHandshake(conn net.Conn, peers string, buffer bytes.Buffer) string {
 	infoHash := sha1.Sum(buffer.Bytes())
 	peerID := []byte("00112233445566778899")
 
@@ -363,7 +363,7 @@ func sendHandshake(conn net.Conn, peers string, buffer bytes.Buffer) {
 	_, err := conn.Write(handshake.Bytes())
 	if err != nil {
 		fmt.Println("Error sending handshake:", err)
-		return
+		panic(err)
 	}
 
 	buf := make([]byte, 68)
@@ -374,11 +374,11 @@ func sendHandshake(conn net.Conn, peers string, buffer bytes.Buffer) {
 		} else {
 			fmt.Println("Error reading response:", err)
 		}
-		return
+		panic(err)
 	}
 
 	receivedPeerID := buf[48:]
-	fmt.Printf("Peer ID: %s\n", hex.EncodeToString(receivedPeerID))
+	return fmt.Sprintf("Peer ID: %s\n", hex.EncodeToString(receivedPeerID))
 }
 
 func get_peers(trackerResponse TrackerResponse) []Peers {
@@ -537,7 +537,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			sendHandshake(conn, peers, buffer_)
+			fmt.Println(sendHandshake(conn, peers, buffer_))
 		}
 	case "download_piece":
 		filename := os.Args[4]
