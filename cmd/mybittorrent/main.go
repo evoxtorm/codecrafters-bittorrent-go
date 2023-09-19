@@ -621,13 +621,13 @@ func main() {
 		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
 		for i := int64(0); i < numBlocks; i++ {
 			data := handlePeerMessages(connections[peerStr], Piece)
-			pieceInd := binary.BigEndian.Uint32(data[1:5])
+			pieceInd := binary.BigEndian.Uint32(data[0:4])
 			if pieceInd != uint32(pieceIndex) {
 				fmt.Println(err)
 				return
 			}
-			begin := binary.BigEndian.Uint32(data[5:9])
-			blockData := data[9:]
+			begin := binary.BigEndian.Uint32(data[4:8])
+			blockData := data[8:]
 			copy(combinedBlockPiece[begin:], blockData)
 		}
 		sum := sha1.Sum(combinedBlockPiece)
