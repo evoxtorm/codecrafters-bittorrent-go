@@ -591,8 +591,6 @@ func main() {
 			pieces[i] = piece
 		}
 		piecesHash := pieces[pieceIndex]
-		// numBlocks := (jsonObject.Info.PiecesLen + int64(BLOCK) - 1) / int64(BLOCK)
-		// pieceOffset := int64(0)
 
 		count := 0
 		for i := 0; i < int(jsonObject.Info.PiecesLen); i = i + BLOCK {
@@ -601,8 +599,12 @@ func main() {
 			// requestMessage[4] = 6
 			binary.BigEndian.PutUint32(requestMessage[0:4], uint32(pieceIndex))
 			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i))
-			binary.BigEndian.PutUint32(requestMessage[8:], uint32(BLOCK))
+			binary.BigEndian.PutUint32(requestMessage[8:], BLOCK)
 
+			messageData := make([]byte, 4+1+len(requestMessage))
+			binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
+			messageData[4] = Request
+			copy(messageData[5:], requestMessage)
 			_, err := connections[peerStr].Write(requestMessage)
 			if err != nil {
 				fmt.Println("Error sending request message:", err)
@@ -612,7 +614,7 @@ func main() {
 		}
 		fmt.Println(peerStr, "This is coming here")
 		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
-		for i := int64(0); i < int64(count); i++ {
+		for i := int(0); i < int(count); i++ {
 			data := handlePeerMessages(connections[peerStr], Piece)
 			pieceInd := binary.BigEndian.Uint32(data[0:4])
 			if pieceInd != uint32(pieceIndex) {
