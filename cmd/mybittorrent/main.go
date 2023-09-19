@@ -638,8 +638,7 @@ func main() {
 			}
 			fmt.Printf("Piece %d downloaded to %s.\n", pieceIndex, file_val)
 		} else {
-			fmt.Println("Unequal pieces ")
-			return
+			panic("Not matched")
 		}
 
 	default:
