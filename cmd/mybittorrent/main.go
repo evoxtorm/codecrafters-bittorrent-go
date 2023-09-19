@@ -609,7 +609,7 @@ func main() {
 			copy(messageData[5:], requestMessage)
 			_, err := connections[peerStr].Write(messageData)
 			if err != nil {
-				fmt.Println("Error sending request message:", err)
+				fmt.Println("Error sending request message: ", err)
 				return
 			}
 			count++
