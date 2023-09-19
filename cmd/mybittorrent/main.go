@@ -585,14 +585,9 @@ func main() {
 		handlePeerMessages(connections[peerStr], Unchoke)
 		piecesHex := jsonObject.Info.Pieces
 		pieces := make([]string, len(piecesHex)/20)
-		for i := 0; i < len(pieces); i++ {
-			start := i * 20
-			end := (i + 1) * 20
-			if end > len(piecesHex) {
-				end = len(piecesHex)
-			}
-			pieceHex := piecesHex[start:end]
-			pieces[i] = hex.EncodeToString([]byte(pieceHex)) // Convert bytes to hexadecimal string
+		for i := 0; i < len(piecesHex)/20; i++ {
+			piece := piecesHex[i*20 : (i*20)+20]
+			pieces[i] = piece
 		}
 		piecesHash := pieces[pieceIndex]
 		numBlocks := (jsonObject.Info.PiecesLen + int64(BLOCK) - 1) / int64(BLOCK)
