@@ -259,6 +259,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -407,41 +408,42 @@ func printPeers(peers []Peers) {
 
 func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 	// fmt.Println("Handle peer message started ", messageID_)
-	for {
-		buffer := make([]byte, 4)
-		// _, err := io.ReadFull(conn, buffer)
-		_, err := conn.Read(buffer)
-		if (err) != nil {
-			fmt.Println("Error reading message length:", err)
-			conn.Close()
-			panic(err)
+	// for {
+	buffer := make([]byte, 4)
+	// _, err := io.ReadFull(conn, buffer)
+	_, err := conn.Read(buffer)
+	if (err) != nil {
+		fmt.Println("Error reading message length:", err)
+		conn.Close()
+		panic(err)
 
-		}
-		recievedMessageID := make([]byte, 1)
-		// _, err = io.ReadFull(conn, messageID)
-		_, err = conn.Read(recievedMessageID)
-		if err != nil {
-			fmt.Println("Error reading message ID:", err)
-			conn.Close()
-			panic(err)
-		}
-		var messageId uint8
-		binary.Read(bytes.NewReader(recievedMessageID), binary.BigEndian, &messageId)
-		messageLength := binary.BigEndian.Uint32(buffer)
-		payload := make([]byte, messageLength-1)
-
-		_, err = io.ReadFull(conn, payload)
-		if err != nil {
-			fmt.Println("Error reading message length:", err)
-			conn.Close()
-			panic(err)
-		}
-
-		// fmt.Printf("Size: %d, Message_id: %d\n", size, messageID_)
-		if messageId == uint8(messageID_) {
-			return payload
-		}
 	}
+	recievedMessageID := make([]byte, 1)
+	messageLength := binary.BigEndian.Uint32(buffer)
+	// _, err = io.ReadFull(conn, messageID)
+	_, err = conn.Read(recievedMessageID)
+	if err != nil {
+		fmt.Println("Error reading message ID:", err)
+		conn.Close()
+		panic(err)
+	}
+	var messageId uint8
+	binary.Read(bytes.NewReader(recievedMessageID), binary.BigEndian, &messageId)
+	if messageId != messageID_ {
+		return nil
+	}
+	payload := make([]byte, messageLength-1)
+
+	size, err := io.ReadFull(conn, payload)
+	if err != nil {
+		fmt.Println("Error reading message length:", err)
+		conn.Close()
+		panic(err)
+	}
+
+	log.Printf("Size: %d, Message_id: %d\n", size, messageID_)
+	return payload
+	// }
 }
 
 func createConnection(peer string) (net.Conn, error) {
@@ -506,7 +508,6 @@ func main() {
 		if err := bencode.Marshal(&buffer_, jsonObject.Info); err != nil {
 			return
 		}
-
 		switch command {
 		case "info":
 			chunkSize := 20
@@ -574,10 +575,10 @@ func main() {
 		}
 		connections := map[string]net.Conn{}
 		peers := get_peers(trackerResponse)
-		defer closeALlConn(connections)
 		peerObjVal := peers[0]
 		peerStr := fmt.Sprintf("%s:%d", peerObjVal.Ip, peerObjVal.Port)
 		connections[peerStr], err = createConnection(peerStr)
+		defer closeALlConn(connections)
 		if err != nil {
 			fmt.Println(err, "Error while creating connection")
 			return
@@ -610,7 +611,7 @@ func main() {
 			binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
 			messageData[4] = Request
 			copy(messageData[5:], requestMessage)
-			_, err := connections[peerStr].Write(messageData)
+			_, err = connections[peerStr].Write(messageData)
 			if err != nil {
 				fmt.Println("Error sending request message: ", err)
 				return
