@@ -397,6 +397,7 @@ func get_peers(trackerResponse TrackerResponse) []Peers {
 			Port: uint64(port),
 		}
 	}
+	log.Println(peersArray, "This is peersArray")
 	return peersArray
 }
 
@@ -599,7 +600,8 @@ func main() {
 			pieces[i] = piece
 		}
 		piecesHash := pieces[pieceIndex]
-		log.Println(piecesHash, pieces)
+
+		log.Printf("This is piece hash: %x and piece id: %d\n", piecesHash, pieceIndex)
 
 		count := 0
 		for i := int64(0); i < int64(jsonObject.Info.PiecesLen); i = i + BLOCK {
