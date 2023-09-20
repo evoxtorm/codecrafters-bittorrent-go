@@ -644,6 +644,7 @@ func main() {
 		} else {
 			panic("Not matched ")
 		}
+		connections[peerStr].Close()
 
 	default:
 		fmt.Println("Unknown command:", command)
