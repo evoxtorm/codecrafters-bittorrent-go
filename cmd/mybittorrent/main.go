@@ -599,6 +599,7 @@ func main() {
 			pieces[i] = piece
 		}
 		piecesHash := pieces[pieceIndex]
+		log.Println(piecesHash, pieces)
 
 		count := 0
 		for i := int64(0); i < int64(jsonObject.Info.PiecesLen); i = i + BLOCK {
