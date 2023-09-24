@@ -592,7 +592,7 @@ func main() {
 		log.Printf("This is piece hash: %x and piece id: %d\n", piecesHash, pieceIndex)
 		pieceLength := jsonObject.Info.PiecesLen
 		if pieceIndex == len(piecesHex)-1 {
-			pieceLength = jsonObject.Info.Length - int64(pieceIndex)*jsonObject.Info.PiecesLen
+			pieceLength = jsonObject.Info.Length - (int64(pieceIndex) * jsonObject.Info.PiecesLen)
 		}
 		lastBlockSize := pieceLength % BLOCK
 		numBlocks := (pieceLength - lastBlockSize) / BLOCK
@@ -629,24 +629,9 @@ func main() {
 			copy(combinedBlockPiece[begin:], blockData)
 
 		}
-		// for i := int(0); i < int(count); i++ {
-		// 	// fmt.Println("This the piece number: ", Piece)
-		// 	data := handlePeerMessages(connections[peerStr], Piece)
-		// 	pieceInd := binary.BigEndian.Uint32(data[0:4])
-		// 	if pieceInd != uint32(pieceIndex) {
-		// 		fmt.Println(err)
-		// 		return
-		// 	}
-		// 	begin := binary.BigEndian.Uint32(data[4:8])
-		// 	blockData := data[8:]
-		// 	copy(combinedBlockPiece[begin:], blockData)
-		// }
 		h := fmt.Sprintf("%x", sha1.Sum(combinedBlockPiece))
-		// sum := sha1.Sum(combinedBlockPiece)
-		// fmt.Println(string(sum[:]) == piecesHash, "this is hash")
 		if h == piecesHash {
 			file_val := os.Args[3]
-			// fmt.Println(file_val, "this is arg3")
 			err := os.WriteFile(file_val, combinedBlockPiece, os.ModePerm)
 			if err != nil {
 				fmt.Println(err)
