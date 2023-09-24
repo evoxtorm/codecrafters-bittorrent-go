@@ -423,9 +423,9 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) ([]byte, error) {
 	if messageID_ != messageID {
 		return nil, fmt.Errorf("unexpected message ID: (actual=%d, expected=%d)", messageID, messageID_)
 	}
-	log.Printf("received message %s\n", messageID_)
+	log.Printf("received message %d\n", messageID_)
 	if messageLength > 1 {
-		log.Printf("message %s has attached payload of size %d\n", messageID_, messageLength-1)
+		log.Printf("message %d has attached payload of size %d\n", messageID_, messageLength-1)
 		payload := make([]byte, messageLength-1)
 		if _, err := io.ReadAtLeast(conn, payload, len(payload)); err != nil {
 			return nil, fmt.Errorf("error while reading payload: %s", err.Error())
@@ -433,42 +433,6 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) ([]byte, error) {
 		return payload, nil
 	}
 	return nil, nil
-	// buffer := make([]byte, 4)
-	// // _, err := io.ReadFull(conn, buffer)
-	// _, err := conn.Read(buffer)
-	// if (err) != nil {
-	// 	log.Println("Error reading message length:", err)
-	// 	conn.Close()
-	// 	panic(err)
-
-	// }
-	// recievedMessageID := make([]byte, 1)
-	// messageLength := binary.BigEndian.Uint32(buffer)
-	// // _, err = io.ReadFull(conn, messageID)
-	// _, err = conn.Read(recievedMessageID)
-	// if err != nil {
-	// 	log.Println("Error reading message ID:", err)
-	// 	conn.Close()
-	// 	panic(err)
-	// }
-	// var messageId uint8
-	// binary.Read(bytes.NewReader(recievedMessageID), binary.BigEndian, &messageId)
-
-	// payload := make([]byte, messageLength-1)
-
-	// size, err := io.ReadFull(conn, payload)
-	// if err != nil {
-	// 	log.Println("Error reading message length:", err)
-	// 	conn.Close()
-	// 	panic(err)
-	// }
-
-	// log.Printf("Size: %d, Message_id: %d\n", size, messageID_)
-	// if messageId == messageID_ {
-	// 	return payload
-	// }
-	// return nil
-	// }
 }
 
 func createConnection(peer string) (net.Conn, error) {
@@ -648,7 +612,7 @@ func main() {
 
 			messageData := make([]byte, 4+1+len(requestMessage))
 			binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
-			messageData[4] = Request
+			messageData[4] = byte(Request)
 			copy(messageData[5:], requestMessage)
 			_, err = connections[peerStr].Write(messageData)
 			if err != nil {
