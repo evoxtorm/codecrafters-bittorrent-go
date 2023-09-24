@@ -598,6 +598,8 @@ func main() {
 		numBlocks := (pieceLength - lastBlockSize) / BLOCK
 		if lastBlockSize > 0 {
 			numBlocks++
+		} else {
+			log.Printf("piece %d has size of %d and is aligned with blocksize of %d\n", pieceIndex, jsonObject.Info.PiecesLen, BLOCK)
 		}
 		combinedBlockPiece := make([]byte, pieceLength)
 		for i := int64(0); i < numBlocks; i++ {
