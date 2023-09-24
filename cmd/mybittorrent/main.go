@@ -603,13 +603,26 @@ func main() {
 		piecesHash := pieces[pieceIndex]
 
 		log.Printf("This is piece hash: %x and piece id: %d\n", piecesHash, pieceIndex)
-
+		pieceLength := jsonObject.Info.PiecesLen
 		count := 0
-		for i := int64(0); i < int64(jsonObject.Info.PiecesLen); i = i + BLOCK {
+		if pieceIndex == len(piecesHex)-1 {
+			pieceLength = jsonObject.Info.Length - int64(pieceIndex)*jsonObject.Info.PiecesLen
+		}
+		lastBlockSize := pieceLength % BLOCK
+		numBlocks := (pieceLength - lastBlockSize) / BLOCK
+		if lastBlockSize > 0 {
+			numBlocks++
+		}
+		combinedBlockPiece := make([]byte, pieceLength)
+		for i := int64(0); i < int64(numBlocks); i++ {
+			length := BLOCK
+			if lastBlockSize > 0 && i == numBlocks-1 {
+				length = int(lastBlockSize)
+			}
 			requestMessage := make([]byte, 12)
 			binary.BigEndian.PutUint32(requestMessage[0:4], uint32(pieceIndex))
-			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i))
-			binary.BigEndian.PutUint32(requestMessage[8:], BLOCK)
+			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i*BLOCK))
+			binary.BigEndian.PutUint32(requestMessage[8:], uint32(length))
 
 			messageData := make([]byte, 4+1+len(requestMessage))
 			binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
@@ -620,11 +633,6 @@ func main() {
 				fmt.Println("Error sending request message: ", err)
 				return
 			}
-			count++
-		}
-		combinedBlockPiece := make([]byte, jsonObject.Info.PiecesLen)
-		for i := int(0); i < int(count); i++ {
-			// fmt.Println("This the piece number: ", Piece)
 			data := handlePeerMessages(connections[peerStr], Piece)
 			pieceInd := binary.BigEndian.Uint32(data[0:4])
 			if pieceInd != uint32(pieceIndex) {
@@ -634,7 +642,20 @@ func main() {
 			begin := binary.BigEndian.Uint32(data[4:8])
 			blockData := data[8:]
 			copy(combinedBlockPiece[begin:], blockData)
+
 		}
+		// for i := int(0); i < int(count); i++ {
+		// 	// fmt.Println("This the piece number: ", Piece)
+		// 	data := handlePeerMessages(connections[peerStr], Piece)
+		// 	pieceInd := binary.BigEndian.Uint32(data[0:4])
+		// 	if pieceInd != uint32(pieceIndex) {
+		// 		fmt.Println(err)
+		// 		return
+		// 	}
+		// 	begin := binary.BigEndian.Uint32(data[4:8])
+		// 	blockData := data[8:]
+		// 	copy(combinedBlockPiece[begin:], blockData)
+		// }
 		sum := sha1.Sum(combinedBlockPiece)
 		// fmt.Println(string(sum[:]) == piecesHash, "this is hash")
 		if string(sum[:]) == piecesHash {
