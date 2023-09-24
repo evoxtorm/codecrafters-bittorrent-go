@@ -600,7 +600,7 @@ func main() {
 			numBlocks++
 		}
 		combinedBlockPiece := make([]byte, pieceLength)
-		for i := int64(0); i < int64(numBlocks); i++ {
+		for i := int64(0); i < numBlocks; i++ {
 			length := BLOCK
 			if lastBlockSize > 0 && i == numBlocks-1 {
 				length = int(lastBlockSize)
@@ -623,7 +623,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			// _ := binary.BigEndian.Uint32(data[0:4])
+			_ = binary.BigEndian.Uint32(data[0:4])
 			begin := binary.BigEndian.Uint32(data[4:8])
 			blockData := data[8:]
 			copy(combinedBlockPiece[begin:], blockData)
@@ -641,9 +641,10 @@ func main() {
 		// 	blockData := data[8:]
 		// 	copy(combinedBlockPiece[begin:], blockData)
 		// }
-		sum := sha1.Sum(combinedBlockPiece)
+		h := fmt.Sprintf("%x", sha1.Sum(combinedBlockPiece))
+		// sum := sha1.Sum(combinedBlockPiece)
 		// fmt.Println(string(sum[:]) == piecesHash, "this is hash")
-		if string(sum[:]) == piecesHash {
+		if h == piecesHash {
 			file_val := os.Args[3]
 			// fmt.Println(file_val, "this is arg3")
 			err := os.WriteFile(file_val, combinedBlockPiece, os.ModePerm)
