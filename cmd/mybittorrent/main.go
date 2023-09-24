@@ -410,42 +410,43 @@ func printPeers(peers []Peers) {
 
 func handlePeerMessages(conn net.Conn, messageID_ uint8) []byte {
 	// fmt.Println("Handle peer message started ", messageID_)
-	for {
-		buffer := make([]byte, 4)
-		// _, err := io.ReadFull(conn, buffer)
-		_, err := conn.Read(buffer)
-		if (err) != nil {
-			log.Println("Error reading message length:", err)
-			conn.Close()
-			panic(err)
+	// for {
+	buffer := make([]byte, 4)
+	// _, err := io.ReadFull(conn, buffer)
+	_, err := conn.Read(buffer)
+	if (err) != nil {
+		log.Println("Error reading message length:", err)
+		conn.Close()
+		panic(err)
 
-		}
-		recievedMessageID := make([]byte, 1)
-		messageLength := binary.BigEndian.Uint32(buffer)
-		// _, err = io.ReadFull(conn, messageID)
-		_, err = conn.Read(recievedMessageID)
-		if err != nil {
-			log.Println("Error reading message ID:", err)
-			conn.Close()
-			panic(err)
-		}
-		var messageId uint8
-		binary.Read(bytes.NewReader(recievedMessageID), binary.BigEndian, &messageId)
-
-		payload := make([]byte, messageLength-1)
-
-		size, err := io.ReadFull(conn, payload)
-		if err != nil {
-			log.Println("Error reading message length:", err)
-			conn.Close()
-			panic(err)
-		}
-
-		log.Printf("Size: %d, Message_id: %d\n", size, messageID_)
-		if messageId == messageID_ {
-			return payload
-		}
 	}
+	recievedMessageID := make([]byte, 1)
+	messageLength := binary.BigEndian.Uint32(buffer)
+	// _, err = io.ReadFull(conn, messageID)
+	_, err = conn.Read(recievedMessageID)
+	if err != nil {
+		log.Println("Error reading message ID:", err)
+		conn.Close()
+		panic(err)
+	}
+	var messageId uint8
+	binary.Read(bytes.NewReader(recievedMessageID), binary.BigEndian, &messageId)
+
+	payload := make([]byte, messageLength-1)
+
+	size, err := io.ReadFull(conn, payload)
+	if err != nil {
+		log.Println("Error reading message length:", err)
+		conn.Close()
+		panic(err)
+	}
+
+	log.Printf("Size: %d, Message_id: %d\n", size, messageID_)
+	if messageId == messageID_ {
+		return payload
+	}
+	return nil
+	// }
 }
 
 func createConnection(peer string) (net.Conn, error) {
@@ -633,11 +634,7 @@ func main() {
 				return
 			}
 			data := handlePeerMessages(connections[peerStr], Piece)
-			pieceInd := binary.BigEndian.Uint32(data[0:4])
-			if pieceInd != uint32(pieceIndex) {
-				fmt.Println(err)
-				return
-			}
+			// _ := binary.BigEndian.Uint32(data[0:4])
 			begin := binary.BigEndian.Uint32(data[4:8])
 			blockData := data[8:]
 			copy(combinedBlockPiece[begin:], blockData)
