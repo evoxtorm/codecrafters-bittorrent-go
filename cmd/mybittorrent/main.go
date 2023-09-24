@@ -604,7 +604,6 @@ func main() {
 
 		log.Printf("This is piece hash: %x and piece id: %d\n", piecesHash, pieceIndex)
 		pieceLength := jsonObject.Info.PiecesLen
-		count := 0
 		if pieceIndex == len(piecesHex)-1 {
 			pieceLength = jsonObject.Info.Length - int64(pieceIndex)*jsonObject.Info.PiecesLen
 		}
