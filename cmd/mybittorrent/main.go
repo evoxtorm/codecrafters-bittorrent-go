@@ -630,6 +630,7 @@ func main() {
 
 		}
 		h := fmt.Sprintf("%x", sha1.Sum(combinedBlockPiece))
+		log.Printf("Calculated hash: %s, piece hash : %s\n", h, piecesHash)
 		if h == piecesHash {
 			file_val := os.Args[3]
 			err := os.WriteFile(file_val, combinedBlockPiece, os.ModePerm)
