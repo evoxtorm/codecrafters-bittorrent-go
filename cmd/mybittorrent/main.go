@@ -590,6 +590,9 @@ func main() {
 		piecesHash := pieces[pieceIndex]
 
 		log.Printf("This is piece hash: %x and piece id: %d\n", piecesHash, pieceIndex)
+		if pieceIndex > len(jsonObject.Info.Pieces) {
+			panic(fmt.Errorf("this torrent only has %d pieces but %d-th requested", len(jsonObject.Info.Pieces)-1, pieceIndex))
+		}
 		pieceLength := jsonObject.Info.PiecesLen
 		if pieceIndex == len(piecesHex)-1 {
 			pieceLength = jsonObject.Info.Length - (int64(pieceIndex) * jsonObject.Info.PiecesLen)
