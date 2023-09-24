@@ -421,7 +421,7 @@ func handlePeerMessages(conn net.Conn, messageID_ uint8) ([]byte, error) {
 		return nil, fmt.Errorf("error while reading message ID: %s", err.Error())
 	}
 	if messageID_ != messageID {
-		return nil, fmt.Errorf("unexpected message ID: (actual=%d, expected=%s)", messageID, m)
+		return nil, fmt.Errorf("unexpected message ID: (actual=%d, expected=%d)", messageID, messageID_)
 	}
 	log.Printf("received message %s\n", messageID_)
 	if messageLength > 1 {
