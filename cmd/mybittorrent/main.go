@@ -449,6 +449,19 @@ func closeALlConn(conns map[string]net.Conn) {
 	}
 }
 
+func sendPeerMessage(connection net.Conn, messageId uint8, payload []byte) {
+	messageData := make([]byte, 4+1+len(payload))
+	binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(payload)))
+	messageData[4] = messageId
+	copy(messageData[5:], payload)
+	_, err := connection.Write(messageData)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	1
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: ./your_bittorrent.sh <command>")
@@ -617,15 +630,16 @@ func main() {
 			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i))
 			binary.BigEndian.PutUint32(requestMessage[8:], uint32(length))
 
-			messageData := make([]byte, 4+1+len(requestMessage))
-			binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
-			messageData[4] = byte(Request)
-			copy(messageData[5:], requestMessage)
-			_, err = connections[peerStr].Write(messageData)
-			if err != nil {
-				fmt.Println("Error sending request message: ", err)
-				return
-			}
+			// messageData := make([]byte, 4+1+len(requestMessage))
+			// binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
+			// messageData[4] = byte(Request)
+			// copy(messageData[5:], requestMessage)
+			// _, err = connections[peerStr].Write(messageData)
+			// if err != nil {
+			// 	fmt.Println("Error sending request message: ", err)
+			// 	return
+			// }
+			sendPeerMessage(connections[peerStr], Request, requestMessage)
 			data, err := handlePeerMessages(connections[peerStr], Piece)
 			if err != nil {
 				panic(err)
