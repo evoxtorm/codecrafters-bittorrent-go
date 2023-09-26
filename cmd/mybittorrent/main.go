@@ -599,7 +599,7 @@ func main() {
 		}
 		lastBlockSize := pieceLength % BLOCK
 		numBlocks := (pieceLength - lastBlockSize) / BLOCK
-		log.Printf("*******Piece length : %d and lastBlockSize: %d*****\n", pieceLength, lastBlockSize)
+		log.Printf("*******Piece length : %d and lastBlockSize: %d and numblocks:  %d*****\n", pieceLength, lastBlockSize, numBlocks)
 		if lastBlockSize > 0 {
 			numBlocks++
 		} else {
