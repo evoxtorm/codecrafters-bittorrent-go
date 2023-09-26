@@ -639,7 +639,7 @@ func main() {
 			// 	fmt.Println("Error sending request message: ", err)
 			// 	return
 			// }
-			sendPeerMessage(connections[peerStr], Request, requestMessage)
+			sendPeerMessage(connections[peerStr], uint8(Request), requestMessage)
 			data, err := handlePeerMessages(connections[peerStr], Piece)
 			if err != nil {
 				panic(err)
