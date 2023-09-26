@@ -295,9 +295,9 @@ const (
 	Bitfield   = 5
 	Interested = 2
 	Unchoke    = 1
-	Request    = 6
-	Piece      = 7
-	BLOCK      = 16 * 1024
+	// Request    = 6
+	Piece = 7
+	BLOCK = 16 * 1024
 )
 
 func splitString(input string, chunkSize int) []string {
@@ -459,7 +459,6 @@ func sendPeerMessage(connection net.Conn, messageId uint8, payload []byte) {
 		log.Fatal(err)
 		return
 	}
-	1
 }
 
 func main() {
