@@ -606,8 +606,8 @@ func main() {
 			panic(fmt.Errorf("this torrent only has %d pieces but %d-th requested", len(jsonObject.Info.Pieces)-1, pieceIndex))
 		}
 		pieceLength := jsonObject.Info.PiecesLen
-		if pieceIndex == len(piecesHex)-1 {
-			pieceLength = jsonObject.Info.Length - (int64(pieceIndex) * jsonObject.Info.PiecesLen)
+		if pieceIndex >= int(jsonObject.Info.Length/jsonObject.Info.PiecesLen) {
+			pieceLength = jsonObject.Info.Length - (jsonObject.Info.PiecesLen * int64(pieceIndex))
 		}
 		lastBlockSize := pieceLength % BLOCK
 		numBlocks := (pieceLength - lastBlockSize) / BLOCK
