@@ -599,6 +599,7 @@ func main() {
 		}
 		lastBlockSize := pieceLength % BLOCK
 		numBlocks := (pieceLength - lastBlockSize) / BLOCK
+		log.Printf("*******Piece length : %d and lastBlockSize: %d*****\n", pieceLength, lastBlockSize)
 		if lastBlockSize > 0 {
 			numBlocks++
 		} else {
@@ -608,6 +609,7 @@ func main() {
 		for i := int64(0); i < numBlocks; i++ {
 			length := BLOCK
 			if lastBlockSize > 0 && i == numBlocks-1 {
+				log.Printf("reached last block, changing size to %d\n", lastBlockSize)
 				length = int(lastBlockSize)
 			}
 			requestMessage := make([]byte, 12)
