@@ -629,16 +629,16 @@ func main() {
 			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i))
 			binary.BigEndian.PutUint32(requestMessage[8:], uint32(length))
 
-			// messageData := make([]byte, 4+1+len(requestMessage))
-			// binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
-			// messageData[4] = byte(Request)
-			// copy(messageData[5:], requestMessage)
-			// _, err = connections[peerStr].Write(messageData)
-			// if err != nil {
-			// 	fmt.Println("Error sending request message: ", err)
-			// 	return
-			// }
-			sendPeerMessage(connections[peerStr], 6, requestMessage)
+			messageData := make([]byte, 4+1+len(requestMessage))
+			binary.BigEndian.PutUint32(messageData[0:4], uint32(1+len(requestMessage)))
+			messageData[4] = byte(6)
+			copy(messageData[5:], requestMessage)
+			_, err = connections[peerStr].Write(messageData)
+			if err != nil {
+				fmt.Println("Error sending request message: ", err)
+				return
+			}
+			// sendPeerMessage(connections[peerStr], 6, requestMessage)
 			data, err := handlePeerMessages(connections[peerStr], Piece)
 			if err != nil {
 				panic(err)
