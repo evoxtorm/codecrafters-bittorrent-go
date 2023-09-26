@@ -606,15 +606,15 @@ func main() {
 			log.Printf("piece %d has size of %d and is aligned with blocksize of %d\n", pieceIndex, jsonObject.Info.PiecesLen, BLOCK)
 		}
 		combinedBlockPiece := make([]byte, pieceLength)
-		for i := int64(0); i < numBlocks; i++ {
+		for i := int64(0); i < pieceLength; i += BLOCK {
 			length := BLOCK
-			if lastBlockSize > 0 && i == numBlocks-1 {
+			if i+BLOCK > pieceLength {
 				log.Printf("reached last block, changing size to %d\n", lastBlockSize)
-				length = int(lastBlockSize)
+				length = int(pieceLength) - int(i)
 			}
 			requestMessage := make([]byte, 12)
 			binary.BigEndian.PutUint32(requestMessage[0:4], uint32(pieceIndex))
-			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i*BLOCK))
+			binary.BigEndian.PutUint32(requestMessage[4:8], uint32(i))
 			binary.BigEndian.PutUint32(requestMessage[8:], uint32(length))
 
 			messageData := make([]byte, 4+1+len(requestMessage))
